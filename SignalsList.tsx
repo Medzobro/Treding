@@ -127,5 +127,3 @@ const SignalsList = () => {
     </div>
   );
 };
-
-export default SignalsList;
