@@ -42,5 +42,3 @@ const PerformanceChart = () => {
     </div>
   );
 };
-
-export default PerformanceChart;
