@@ -164,5 +164,3 @@ const TradingDashboard = () => {
     </div>
   );
 };
-
-export default TradingDashboard;
