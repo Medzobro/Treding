@@ -1,4 +1,3 @@
-
 import TradingDashboard from "@/components/TradingDashboard";
 
 const Index = () => {
