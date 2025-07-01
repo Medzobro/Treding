@@ -1,139 +1,167 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { TrendingUp, TrendingDown, DollarSign, Activity } from 'lucide-react';
+import { Play, Pause, TrendingUp, TrendingDown, DollarSign, Target } from "lucide-react";
+import SignalsList from "./SignalsList";
+import PerformanceChart from "./PerformanceChart";
+import BotSettings from "./BotSettings";
 
-interface TradingDashboardProps {
-  currentPrice: {
-    BTCUSDT: number;
-    XAUUSD: number;
-  };
-  botStatus: string;
+interface BotStats {
+  dailyProfit: number;
+  activeSignals: number;
+  successRate: number;
+  totalProfit: number;
+  isRunning: boolean;
 }
 
-const TradingDashboard: React.FC<TradingDashboardProps> = ({ currentPrice, botStatus }) => {
-  const recentTrades = [
-    { id: 1, symbol: 'BTCUSDT', type: 'BUY', price: 43180.50, profit: 156.78, status: 'closed', time: '10:30' },
-    { id: 2, symbol: 'XAUUSD', type: 'SELL', price: 2047.25, profit: -43.21, status: 'closed', time: '09:15' },
-    { id: 3, symbol: 'BTCUSDT', type: 'BUY', price: 43250.00, profit: 89.45, status: 'open', time: '11:45' },
-    { id: 4, symbol: 'XAUUSD', type: 'BUY', price: 2048.75, profit: 123.67, status: 'open', time: '12:20' },
-  ];
+const TradingDashboard = () => {
+  const [stats, setStats] = useState<BotStats>({
+    dailyProfit: 125.50,
+    activeSignals: 3,
+    successRate: 72.5,
+    totalProfit: 2840.75,
+    isRunning: true
+  });
 
-  const assets = [
-    {
-      symbol: 'BTCUSDT',
-      name: 'Bitcoin',
-      price: currentPrice.BTCUSDT,
-      change: '+2.45%',
-      volume: '1.2M',
-      signal: 'BUY',
-      strength: 75
-    },
-    {
-      symbol: 'XAUUSD',
-      name: 'Gold',
-      price: currentPrice.XAUUSD,
-      change: '-0.12%',
-      volume: '850K',
-      signal: 'HOLD',
-      strength: 45
-    }
-  ];
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'signals' | 'performance' | 'settings'>('dashboard');
+
+  const toggleBot = () => {
+    setStats(prev => ({ ...prev, isRunning: !prev.isRunning }));
+  };
 
   return (
-    <div className="grid lg:grid-cols-3 gap-6">
-      {/* Assets Overview */}
-      <div className="lg:col-span-2 space-y-4">
-        <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="text-slate-200 flex items-center gap-2">
-              <Activity className="w-5 h-5" />
-              الأصول المتداولة
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {assets.map((asset) => (
-              <div key={asset.symbol} className="p-4 bg-slate-700/30 rounded-lg border border-slate-600">
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <h3 className="font-semibold text-white">{asset.name}</h3>
-                    <p className="text-sm text-slate-400">{asset.symbol}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-white">${asset.price.toFixed(2)}</p>
-                    <p className={`text-sm ${asset.change.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
-                      {asset.change}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm text-slate-400">قوة الإشارة</span>
-                  <Badge 
-                    variant={asset.signal === 'BUY' ? 'default' : asset.signal === 'SELL' ? 'destructive' : 'secondary'}
-                    className="text-xs"
-                  >
-                    {asset.signal}
-                  </Badge>
-                </div>
-                <Progress value={asset.strength} className="h-2" />
-                <p className="text-xs text-slate-400 mt-1">الحجم: {asset.volume}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+    <div className="p-6 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">لوحة تحكم بوت التداول</h1>
+            <p className="text-gray-600 mt-2">مراقبة وإدارة إشارات التداول الآلي</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <Badge variant={stats.isRunning ? "default" : "secondary"} className="px-3 py-1">
+              {stats.isRunning ? "يعمل" : "متوقف"}
+            </Badge>
+            <Button
+              onClick={toggleBot}
+              variant={stats.isRunning ? "destructive" : "default"}
+              className="flex items-center gap-2"
+            >
+              {stats.isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+              {stats.isRunning ? "إيقاف البوت" : "تشغيل البوت"}
+            </Button>
+          </div>
+        </div>
       </div>
 
-      {/* Recent Trades */}
-      <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
-        <CardHeader>
-          <CardTitle className="text-slate-200 flex items-center gap-2">
-            <DollarSign className="w-5 h-5" />
-            الصفقات الأخيرة
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {recentTrades.map((trade) => (
-            <div key={trade.id} className="p-3 bg-slate-700/30 rounded-lg border border-slate-600">
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <p className="font-medium text-white text-sm">{trade.symbol}</p>
-                  <p className="text-xs text-slate-400">{trade.time}</p>
-                </div>
-                <Badge 
-                  variant={trade.type === 'BUY' ? 'default' : 'destructive'}
-                  className="text-xs"
-                >
-                  {trade.type}
-                </Badge>
-              </div>
-              
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-400">${trade.price}</span>
-                <div className="flex items-center gap-1">
-                  {trade.profit > 0 ? (
-                    <TrendingUp className="w-3 h-3 text-green-400" />
-                  ) : (
-                    <TrendingDown className="w-3 h-3 text-red-400" />
-                  )}
-                  <span className={`text-xs font-medium ${trade.profit > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    ${Math.abs(trade.profit).toFixed(2)}
-                  </span>
-                </div>
-              </div>
-              
-              <Badge 
-                variant={trade.status === 'open' ? 'default' : 'secondary'}
-                className="text-xs mt-2"
-              >
-                {trade.status === 'open' ? 'مفتوحة' : 'مغلقة'}
-              </Badge>
-            </div>
+      {/* Navigation Tabs */}
+      <div className="mb-6">
+        <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+          {[
+            { id: 'dashboard', label: 'لوحة التحكم' },
+            { id: 'signals', label: 'الإشارات' },
+            { id: 'performance', label: 'الأداء' },
+            { id: 'settings', label: 'الإعدادات' }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab === tab.id
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              {tab.label}
+            </button>
           ))}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+
+      {/* Content based on active tab */}
+      {activeTab === 'dashboard' && (
+        <>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">الربح اليومي</CardTitle>
+                <DollarSign className="h-4 w-4 text-green-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">
+                  ${stats.dailyProfit.toFixed(2)}
+                </div>
+                <p className="text-xs text-gray-600">+12.5% من أمس</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">الإشارات النشطة</CardTitle>
+                <Target className="h-4 w-4 text-blue-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.activeSignals}</div>
+                <p className="text-xs text-gray-600">2 شراء، 1 بيع</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">نسبة النجاح</CardTitle>
+                <TrendingUp className="h-4 w-4 text-green-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">
+                  {stats.successRate.toFixed(1)}%
+                </div>
+                <p className="text-xs text-gray-600">+2.1% هذا الأسبوع</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">إجمالي الأرباح</CardTitle>
+                <TrendingUp className="h-4 w-4 text-green-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">
+                  ${stats.totalProfit.toFixed(2)}
+                </div>
+                <p className="text-xs text-gray-600">منذ بداية الشهر</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Recent Activity */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>آخر الإشارات</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <SignalsList />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>الأداء السريع</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PerformanceChart />
+              </CardContent>
+            </Card>
+          </div>
+        </>
+      )}
+
+      {activeTab === 'signals' && <SignalsList />}
+      {activeTab === 'performance' && <PerformanceChart />}
+      {activeTab === 'settings' && <BotSettings />}
     </div>
   );
 };
